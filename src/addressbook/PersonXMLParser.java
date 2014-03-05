@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.sql.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -68,27 +68,18 @@ public class PersonXMLParser {
             NodeList nodeListData = nodePerson.getChildNodes();
                     
             String[] d = new String[15];
-//            for(int j=0; j<nodeListData.getLength(); j++) {
-            for(int j=0; j<15; j++) {
-                d[j] = nodeListData.item(j).getTextContent();
+            int k=0;
+            for(int j=0; j<nodeListData.getLength(); j++) {
+                if(nodeListData.item(j).getNodeType()==Node.ELEMENT_NODE) {
+                    d[k++] = nodeListData.item(j).getTextContent();
+                }
             }
             int id = Integer.valueOf(d[0]);
-            Date fechaNac = stringToDate(d[12]);
+            Date fechaNac = Date.valueOf(d[12]);
             Person person = new Person(id, d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], d[9], d[10], d[11], fechaNac, d[13], d[14]);
             personsList.add(person);
         }
         return personsList;
-    }
-    
-    private Date stringToDate(String str) {
-        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = null;
-        try {
-            date = formato.parse(str);
-        } catch (ParseException ex) {
-            Logger.getLogger(PersonXMLParser.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return date;
     }
     
 }
