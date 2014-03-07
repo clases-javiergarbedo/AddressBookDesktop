@@ -17,6 +17,7 @@
 
 package addressbook;
 
+import java.sql.Date;
 import java.util.ArrayList;
 
 /**
@@ -25,13 +26,16 @@ import java.util.ArrayList;
  */
 public class Main extends javax.swing.JFrame {
 
+    ArrayList<Person> personsList;
+    private final String XML_FILE_NAME = "address_book.xml";
+            
     /**
      * Creates new form Main
      */
     public Main() {
         initComponents();
-        PersonXMLParser personXMLParser = new PersonXMLParser("address_book.xml");
-        ArrayList<Person> personsList = personXMLParser.getPersonsList();
+        PersonXMLParser personXMLParser = new PersonXMLParser(XML_FILE_NAME);
+        personsList = personXMLParser.getPersonsList();
         jList1.setListData(personsList.toArray());
     }
 
@@ -73,9 +77,11 @@ public class Main extends javax.swing.JFrame {
         jLabel13 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTextAreaObservaciones = new javax.swing.JTextArea();
-        jButton1 = new javax.swing.JButton();
+        jButtonGuardar = new javax.swing.JButton();
         jDateChooser1 = new com.toedter.calendar.JDateChooser();
-        jButton2 = new javax.swing.JButton();
+        jButtonXML = new javax.swing.JButton();
+        jButtonNuevo = new javax.swing.JButton();
+        jButtonEliminar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -123,10 +129,10 @@ public class Main extends javax.swing.JFrame {
         jTextAreaObservaciones.setRows(5);
         jScrollPane2.setViewportView(jTextAreaObservaciones);
 
-        jButton1.setText("Guardar");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        jButtonGuardar.setText("Guardar");
+        jButtonGuardar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                jButtonGuardarActionPerformed(evt);
             }
         });
 
@@ -183,7 +189,7 @@ public class Main extends javax.swing.JFrame {
                         .addComponent(jTextFieldPais))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton1))
+                        .addComponent(jButtonGuardar))
                     .addComponent(jScrollPane2)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel13)
@@ -246,11 +252,30 @@ public class Main extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1)
+                .addComponent(jButtonGuardar)
                 .addContainerGap())
         );
 
-        jButton2.setText("Exportar XML");
+        jButtonXML.setText("Exportar XML");
+        jButtonXML.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonXMLActionPerformed(evt);
+            }
+        });
+
+        jButtonNuevo.setText("Nuevo");
+        jButtonNuevo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonNuevoActionPerformed(evt);
+            }
+        });
+
+        jButtonEliminar.setText("Eliminar");
+        jButtonEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonEliminarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -259,7 +284,12 @@ public class Main extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton2)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jButtonXML)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonNuevo)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonEliminar))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -274,7 +304,10 @@ public class Main extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jScrollPane1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButtonXML)
+                            .addComponent(jButtonNuevo)
+                            .addComponent(jButtonEliminar))))
                 .addContainerGap())
         );
 
@@ -282,7 +315,78 @@ public class Main extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jList1ValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jList1ValueChanged
-        Person person = (Person)jList1.getSelectedValue();
+        if(!jList1.isSelectionEmpty()) {
+            Person person = (Person)jList1.getSelectedValue();
+            showPerson(person);
+        }
+    }//GEN-LAST:event_jList1ValueChanged
+
+    private void jButtonGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonGuardarActionPerformed
+        if(!jList1.isSelectionEmpty()) {
+            //Recoger los datos antiguos de la persona
+            Person person = (Person)jList1.getSelectedValue();
+            //Actualizar los datos de cada atributo
+            updatePerson(person);
+            //Guardar los nuevos datos en el ArrayList
+            int posSelect = jList1.getSelectedIndex();
+            personsList.set(posSelect, person);
+            //Actualizar la lista en pantalla
+            jList1.setListData(personsList.toArray());
+            //Volver a seleccionar la persona en la lista
+            jList1.setSelectedIndex(posSelect);            
+        } else { //No hay ninguna persona seleccionada
+            Person person = new Person();
+            updatePerson(person);
+            personsList.add(person);
+            jList1.setListData(personsList.toArray());
+            int numPersons = personsList.size();
+            //Seleccionar la nueva persona en la lista
+            jList1.setSelectedIndex(numPersons-1);
+            //Asegurar que se muestre la nueva persona en la lista
+            jList1.ensureIndexIsVisible(numPersons-1);
+        }
+    }//GEN-LAST:event_jButtonGuardarActionPerformed
+
+    private void jButtonNuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonNuevoActionPerformed
+        Person person = new Person();
+        showPerson(person);
+        jList1.clearSelection();
+    }//GEN-LAST:event_jButtonNuevoActionPerformed
+
+    private void jButtonXMLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonXMLActionPerformed
+        PersonXMLParser.createXML(personsList, XML_FILE_NAME);        
+    }//GEN-LAST:event_jButtonXMLActionPerformed
+
+    private void jButtonEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEliminarActionPerformed
+        if(jList1.getSelectedIndex()!=-1) {
+            int pos = jList1.getSelectedIndex();
+            personsList.remove(pos);
+            jList1.setListData(personsList.toArray());
+            showPerson(new Person());
+        }
+    }//GEN-LAST:event_jButtonEliminarActionPerformed
+
+    private void updatePerson(Person person) {
+        person.setName(jTextFieldNombre.getText());        
+        person.setSurnames(jTextFieldApellidos.getText());        
+        person.setAlias(jTextFieldAlias.getText());        
+        person.setEmail(jTextFieldEmail.getText());        
+        person.setPhoneNumber(jTextFieldTlfFijo.getText());        
+        person.setMobileNumber(jTextFieldTlfMovil.getText());        
+        person.setAddress(jTextFieldDireccion.getText());        
+        person.setPostCode(jTextFieldCP.getText());        
+        person.setCity(jTextFieldCiudad.getText());        
+        person.setProvince(jTextFieldProvincia.getText());        
+        person.setCountry(jTextFieldPais.getText());   
+        try {
+            person.setBirthDate(new Date(jDateChooser1.getDate().getTime()));
+        } catch(Exception ex) {
+            person.setBirthDate(null);
+        }
+        person.setComments(jTextAreaObservaciones.getText());                
+    }
+    
+    private void showPerson(Person person) {
         jTextFieldNombre.setText(person.getName());        
         jTextFieldApellidos.setText(person.getSurnames());        
         jTextFieldAlias.setText(person.getAlias());        
@@ -295,15 +399,8 @@ public class Main extends javax.swing.JFrame {
         jTextFieldProvincia.setText(person.getProvince());        
         jTextFieldPais.setText(person.getCountry());        
         jDateChooser1.setDate(person.getBirthDate());        
-        jTextAreaObservaciones.setText(person.getComments());        
-        
-    }//GEN-LAST:event_jList1ValueChanged
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    
+        jTextAreaObservaciones.setText(person.getComments());                
+    }
     
     /**
      * @param args the command line arguments
@@ -341,8 +438,10 @@ public class Main extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButtonEliminar;
+    private javax.swing.JButton jButtonGuardar;
+    private javax.swing.JButton jButtonNuevo;
+    private javax.swing.JButton jButtonXML;
     private com.toedter.calendar.JDateChooser jDateChooser1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
